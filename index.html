@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom bags</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      padding: 40px 20px 60px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .avatar-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.25);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .bio {
+      font-size: 14px;
+      color: rgba(255,255,255,0.55);
+      text-align: center;
+      margin-bottom: 30px;
+      line-height: 1.7;
+      max-width: 320px;
+    }
+
+    .links {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .link-btn:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+    .link-btn:active {
+      transform: translateY(0);
+    }
+
+    .link-btn .icon-circle {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .link-btn .text-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .link-btn .title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .link-btn .subtitle {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 400;
+    }
+    .link-btn .arrow {
+      font-size: 18px;
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+
+    .btn-wechat .icon-circle  { background: rgba(7,193,96,0.2);  border: 1px solid rgba(7,193,96,0.35); }
+    .btn-wechat:hover         { border-color: rgba(7,193,96,0.4); background: rgba(7,193,96,0.12); }
+    .btn-qq .icon-circle      { background: rgba(18,150,219,0.2); border: 1px solid rgba(18,150,219,0.35); }
+    .btn-qq:hover             { border-color: rgba(18,150,219,0.4); background: rgba(18,150,219,0.12); }
+    .btn-email .icon-circle   { background: rgba(233,69,96,0.2);  border: 1px solid rgba(233,69,96,0.35); }
+    .btn-email:hover          { border-color: rgba(233,69,96,0.4); background: rgba(233,69,96,0.12); }
+    .btn-whatsapp .icon-circle{ background: rgba(37,211,102,0.2); border: 1px solid rgba(37,211,102,0.35); }
+    .btn-whatsapp:hover       { border-color: rgba(37,211,102,0.4); background: rgba(37,211,102,0.12); }
+
+    .copy-toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .copy-toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 300px;
+      width: 100%;
+      text-align: center;
+      animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .modal-box h3 {
+      font-size: 18px;
+      margin-bottom: 6px;
+      color: #333;
+    }
+    .modal-box .modal-sub {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 18px;
+    }
+    .modal-box .qr-area {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 18px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .modal-box .qr-area canvas,
+    .modal-box .qr-area img {
+      width: 180px !important;
+      height: 180px !important;
+    }
+    .modal-box .modal-id {
+      font-size: 15px;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .modal-box .modal-tip {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 18px;
+    }
+    .modal-box .modal-copy-btn {
+      display: inline-block;
+      padding: 8px 24px;
+      background: #f0f0f0;
+      color: #555;
+      border: none;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      margin-bottom: 16px;
+      transition: background 0.2s;
+    }
+    .modal-box .modal-copy-btn:hover {
+      background: #e0e0e0;
+    }
+    .modal-box .modal-close {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .modal-box .modal-close:hover {
+      background: #5568d3;
+    }
+
+    .footer {
+      margin-top: 36px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="avatar-wrap">
+      <div class="avatar">
+        <img src="avatar.jpg" alt="Custom bags" />
+      </div>
+    </div>
+
+    <div class="name">Custom bags</div>
+
+    <div class="bio">
+      Custom bags / 定制各类包包<br>
+      点击下方按钮扫码联系我
+    </div>
+
+    <div class="links">
+
+      <div class="link-btn btn-wechat" onclick="showQR('微信 WeChat', 'YKD20888', 'qr-wechat.jpg')">
+        <div class="icon-circle" style="color:#07c160">💬</div>
+        <div class="text-wrap">
+          <div class="title">微信 WeChat</div>
+          <div class="subtitle">YKD20888 · 点击查看二维码</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+
+      <div class="link-btn btn-qq" onclick="showQR('QQ', '2490746931', 'qr-qq.jpg')">
+        <div class="icon-circle" style="color:#1296db">🐧</div>
+        <div class="text-wrap">
+          <div class="title">QQ</div>
+          <div class="subtitle">2490746931 · 点击查看二维码</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+
+      <a class="link-btn btn-email" href="mailto:1366260199@qq.com">
+        <div class="icon-circle" style="color:#e94560">✉️</div>
+        <div class="text-wrap">
+          <div class="title">邮箱 Email</div>
+          <div class="subtitle">1366260199@qq.com</div>
+        </div>
+        <div class="arrow">›</div>
+      </a>
+
+      <div class="link-btn btn-whatsapp" onclick="showQR('WhatsApp', '+86 173 3294 8163', 'qr-whatsapp.jpg')">
+        <div class="icon-circle" style="color:#25d366">🟢</div>
+        <div class="text-wrap">
+          <div class="title">WhatsApp</div>
+          <div class="subtitle">+86 173 3294 8163 · 点击查看二维码</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+
+    </div>
+
+    <div class="footer">© 2026 Custom bags · 感谢你的访问</div>
+
+  </div>
+
+  <div class="copy-toast" id="copyToast">已复制</div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-box">
+      <h3 id="modalTitle">扫码添加</h3>
+      <div class="modal-sub" id="modalSub">扫一扫二维码</div>
+      <div class="qr-area" id="qrArea"></div>
+      <div class="modal-id" id="modalId"></div>
+      <div class="modal-tip" id="modalTip"></div>
+      <button class="modal-copy-btn" id="modalCopyBtn" onclick="modalCopy()">复制号码</button>
+      <button class="modal-close" onclick="closeModalBtn()">关闭</button>
+    </div>
+  </div>
+
+  <script>
+    var currentCopyText = '';
+
+    function showQR(platform, id, qrData) {
+      currentCopyText = id;
+      document.getElementById('modalTitle').textContent = platform;
+      document.getElementById('modalId').textContent = id;
+
+      if (platform === 'WhatsApp') {
+        document.getElementById('modalSub').textContent = '扫码打开 WhatsApp 聊天';
+        document.getElementById('modalTip').textContent = '或点击复制号码手动添加';
+      } else if (platform === 'QQ') {
+        document.getElementById('modalSub').textContent = '扫一扫添加 QQ 好友';
+        document.getElementById('modalTip').textContent = '或点击复制 QQ 号手动添加';
+      } else {
+        document.getElementById('modalSub').textContent = '扫一扫添加微信好友';
+        document.getElementById('modalTip').textContent = '或点击复制微信号手动添加';
+      }
+
+      var qrArea = document.getElementById('qrArea');
+      qrArea.innerHTML = '';
+
+      // 如果是图片文件路径，直接显示图片
+      if (qrData && (qrData.indexOf('data:image') === 0 || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(qrData))) {
+        qrArea.innerHTML = '<img src="' + qrData + '" alt="二维码" style="width:100%;height:100%;object-fit:contain;border-radius:8px;" />';
+      } else {
+        try {
+          new QRCode(qrArea, {
+            text: qrData,
+            width: 180,
+            height: 180,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        } catch(e) {
+          qrArea.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(qrData) + '" alt="QR" />';
+        }
+      }
+
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function modalCopy() {
+      copyText(currentCopyText, '已复制：' + currentCopyText);
+    }
+
+    function copyText(text, toastMsg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast(toastMsg || '已复制');
+        }).catch(function() {
+          fallbackCopy(text, toastMsg);
+        });
+      } else {
+        fallbackCopy(text, toastMsg);
+      }
+    }
+
+    function fallbackCopy(text, toastMsg) {
+      var textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(textarea);
+      showToast(toastMsg || '已复制');
+    }
+
+    function showToast(msg) {
+      var toast = document.getElementById('copyToast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(function() {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    function closeModal(e) {
+      if (e.target === e.currentTarget) {
+        document.getElementById('modalOverlay').classList.remove('show');
+      }
+    }
+    function closeModalBtn() {
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+  </script>
+</body>
+</html>
